@@ -1,10 +1,15 @@
 import { defineConfig } from "drizzle-kit";
+import { config } from "dotenv";
+
+// Load .env.local so `npm run db:push` picks up DATABASE_URL without hardcoding
+// credentials in this (committed) file.
+config({ path: ".env.local" });
 
 export default defineConfig({
   schema: "./configs/schema.js",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: "postgresql://neondb_owner:CaA2nZHXJ4jU@ep-dark-bar-a5ytug5u.us-east-2.aws.neon.tech/neondb?sslmode=require",
+    url: process.env.DATABASE_URL,
   },
 });

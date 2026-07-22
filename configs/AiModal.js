@@ -4,11 +4,14 @@ const {
   HarmBlockThreshold,
 } = require("@google/generative-ai");
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+// Server-only key (this module is imported only by server actions now).
+const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  // gemini-1.5-flash and 2.0-flash are not available for this API key;
+  // gemini-2.5-flash is the current supported model (verified against the key).
+  model: "gemini-2.5-flash",
 });
 
 const generationConfig = {

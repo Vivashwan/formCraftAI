@@ -4,7 +4,7 @@ import Hero from "./_components/Hero";
 
 export default function Home() {
   return (
-    <section className="bg-gray-50">
+    <section className="bg-background text-foreground">
       <div className="mx-auto max-w-screen-xl px-4 py-32 lg:flex lg:h-screen">
         <div className="mx-auto max-w-xl text-center">
           <h1 className="text-3xl font-extrabold sm:text-5xl">

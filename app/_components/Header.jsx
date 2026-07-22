@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect } from "react";
+import ModeToggle from "./ModeToggle";
 
 function Header() {
   const { user, isSignedIn } = useUser();
@@ -27,18 +28,21 @@ function Header() {
               className="cursor-pointer"
             />
           </Link>
-          {isSignedIn ? (
-            <div className="flex items-center gap-5">
-              <Link href={"/dashboard"}>
-                <Button variant="outline">Dashboard</Button>
-              </Link>
-              <UserButton />
-            </div>
-          ) : (
-            <SignInButton>
-              <Button>Get Started</Button>
-            </SignInButton>
-          )}
+          <div className="flex items-center gap-5">
+            <ModeToggle />
+            {isSignedIn ? (
+              <>
+                <Link href={"/dashboard"}>
+                  <Button variant="outline">Dashboard</Button>
+                </Link>
+                <UserButton />
+              </>
+            ) : (
+              <SignInButton>
+                <Button>Get Started</Button>
+              </SignInButton>
+            )}
+          </div>
         </div>
       </div>
     )

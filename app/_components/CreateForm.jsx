@@ -11,18 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AiChatSession } from "@/configs/AiModal";
 import { useUser } from "@clerk/nextjs";
-import { JsonForms } from "@/configs/schema";
-import moment from "moment/moment";
-import { db } from "@/configs";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { desc, eq } from "drizzle-orm";
-
-const PROMPT =
-  ", on the basis of description please give form in json format with form title, form subheading with form having Form field, form name, placeholder name and form label, field type, field required in json format. Give only from checkbox, radiogroup, radiogroupitem, input text, calendar, digits like for mobile number ";
+import { createForm } from "@/app/_actions/forms";
 
 function CreateForm() {
   const [openDialog, setOpenDialog] = useState(false);
@@ -32,51 +25,30 @@ function CreateForm() {
   const { user } = useUser();
   const route = useRouter();
 
-  const [formList, setFormList] = useState();
-
-  useEffect(() => {
-    user && GetFormList()
-  }, [user])
-
-  const GetFormList = async () => {
-    const result = await db.select().from(JsonForms)
-      .where(eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress))
-      .orderBy(desc(JsonForms.id));
-
-    setFormList(result);
-  }
-
   const onCreateForm = async () => {
-
-    if (formList?.length == 3) {
-      toast('Upgrade to create unlimited forms')
+    if (!userInput?.trim()) {
+      toast("Please describe your form first.");
       return;
     }
 
     setLoading(true);
+    try {
+      // Server enforces the free-plan limit, generates the form, and inserts it.
+      const result = await createForm(userInput);
 
-    const result = await AiChatSession.sendMessage(
-      "Description: " + userInput + PROMPT
-    );
-
-    if (result.response.text()) {
-      const resp = await db
-        .insert(JsonForms)
-        .values({
-          jsonform: result.response.text(),
-          createdBy: user?.primaryEmailAddress?.emailAddress,
-          createdAt: moment().format("DD/MM/yyyy"),
-        })
-        .returning({ id: JsonForms.id });
-
-      if (resp[0].id) {
-        route.push("/edit-style/" + resp[0].id);
+      if (result?.error === "LIMIT") {
+        toast("Upgrade to create unlimited forms");
+      } else if (result?.uuid) {
+        route.push("/edit-style/" + result.uuid);
+      } else {
+        toast.error("Could not generate the form. Please try again.");
       }
-
+    } catch (error) {
+      console.error("Error creating form:", error);
+      toast.error("Could not generate the form. Please try again in a moment.");
+    } finally {
       setLoading(false);
     }
-
-    setLoading(false);
   };
   return (
     <div>

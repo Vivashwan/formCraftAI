@@ -1,4 +1,4 @@
-import { Delete, Edit, Trash } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 import React, { useState } from "react";
 
 import {
@@ -19,54 +19,96 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
-function FieldEdit({ defaultValue, onUpdate, deleteField }) {
-  const [label, setLabel] = useState(defaultValue?.formLabel || '');
-  const [placeholder, setPlaceholder] = useState(defaultValue?.placeholderName || '');
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false); // Popover state
+import FieldForm from "./FieldForm";
+import {
+  getFieldCondition,
+  getFieldLabel,
+  getFieldName,
+  getFieldOptions,
+  getFieldPlaceholder,
+  getFieldRequired,
+  getFieldRules,
+  getFileTypes,
+  needsOptions,
+  normalizeType,
+} from "@/app/_data/fieldUtils";
+
+function FieldEdit({ defaultValue, onUpdate, deleteField, fields = [] }) {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [def, setDef] = useState(fieldToDef(defaultValue));
+
+  function fieldToDef(field) {
+    return {
+      label: getFieldLabel(field),
+      placeholder: getFieldPlaceholder(field),
+      fieldType: normalizeType(field?.fieldType),
+      required: getFieldRequired(field),
+      options: getFieldOptions(field),
+      condition: getFieldCondition(field),
+      fileTypes: getFileTypes(field),
+      validation: getFieldRules(field),
+    };
+  }
+
+  // Re-sync inputs to the field's current values each time the popover opens.
+  const handleOpenChange = (open) => {
+    if (open) setDef(fieldToDef(defaultValue));
+    setIsPopoverOpen(open);
+  };
 
   const handleUpdate = () => {
-    // Basic validation to ensure fields are not empty
-    if (!label.trim() || !placeholder.trim()) {
-      return; // Or show an error message
+    if (!def.label.trim()) {
+      toast.error("Please enter a label.");
+      return;
+    }
+    if (needsOptions(def.fieldType)) {
+      const valid = (def.options || []).filter((o) => o.label.trim());
+      if (valid.length === 0) {
+        toast.error("Please add at least one option.");
+        return;
+      }
+    }
+    if (def.fieldType === "file" && (def.fileTypes || []).length === 0) {
+      toast.error("Please select at least one allowed file type.");
+      return;
     }
     onUpdate({
-      label: label,
-      placeholder: placeholder,
+      label: def.label,
+      placeholder: def.placeholder,
+      fieldType: def.fieldType,
+      required: def.required,
+      options: def.options,
+      condition: def.condition,
+      fileTypes: def.fileTypes,
+      validation: def.validation,
     });
-    setIsPopoverOpen(false); // Close the popover after updating
+    setIsPopoverOpen(false);
   };
 
   return (
     <div className="flex gap-2 items-center">
-      {/* Popover for editing */}
-      <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+      {/* Popover for editing / converting the field */}
+      <Popover open={isPopoverOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="ghost" className="p-0">
             <Edit className="h-4 w-4 text-gray-600" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="p-4">
-          <h2 className="text-sm font-semibold mb-2">Edit Fields</h2>
-          <div className="mb-2">
-            <label className="text-xs block mb-1">Label Name</label>
-            <input
-              type="text"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              className="w-full px-2 py-1 text-sm border rounded"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="text-xs block mb-1">Placeholder Name</label>
-            <input
-              type="text"
-              value={placeholder}
-              onChange={(e) => setPlaceholder(e.target.value)}
-              className="w-full px-2 py-1 text-sm border rounded"
-            />
-          </div>
-          <Button size="sm" className="w-full text-sm" onClick={handleUpdate}>
+        <PopoverContent className="p-4 w-80 max-h-[70vh] overflow-y-auto">
+          <h2 className="text-sm font-semibold mb-3">Edit Field</h2>
+          <FieldForm
+            value={def}
+            onChange={setDef}
+            fields={fields}
+            selfName={getFieldName(defaultValue)}
+          />
+          <Button
+            size="sm"
+            className="w-full text-sm mt-4"
+            onClick={handleUpdate}
+          >
             Update
           </Button>
         </PopoverContent>
@@ -83,7 +125,8 @@ function FieldEdit({ defaultValue, onUpdate, deleteField }) {
               Are you absolutely sure?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm">
-              This action cannot be undone. This will permanently delete this field.
+              This action cannot be undone. This will permanently delete this
+              field.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

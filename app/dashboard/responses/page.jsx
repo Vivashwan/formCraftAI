@@ -1,27 +1,27 @@
 "use client";
-import { db } from "@/configs";
-import { JsonForms } from "@/configs/schema";
 import { useUser } from "@clerk/nextjs";
-import { eq } from "drizzle-orm";
 import React, { useEffect, useState } from "react";
 import FormListItemResponse from "./_components/FormListItemResponse";
+import { getMyForms } from "@/app/_actions/forms";
 
 function Responses() {
   const { user } = useUser();
 
   const [formList, setFormList] = useState();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     user && getFormList();
   }, [user]);
 
   const getFormList = async () => {
-    const result = await db
-      .select()
-      .from(JsonForms)
-      .where(eq(JsonForms.createdBy, user?.primaryEmailAddress?.emailAddress));
-
-    setFormList(result);
+    setLoading(true);
+    try {
+      const result = await getMyForms();
+      setFormList(result || []);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <div className="p-10">
@@ -29,13 +29,27 @@ function Responses() {
         Responses
       </h2>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-5">
-        {formList&&formList?.map((form, index) => (
-          <FormListItemResponse
-            formRecord={form}
-            jsonForm={JSON.parse(form.jsonform)}
-          />
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="border rounded-lg p-4 h-32 animate-pulse bg-muted/40"
+            />
+          ))
+        ) : formList?.length ? (
+          formList.map((form, index) => (
+            <FormListItemResponse
+              key={index}
+              formRecord={form}
+              jsonForm={JSON.parse(form.jsonform)}
+            />
+          ))
+        ) : (
+          <p className="text-muted-foreground col-span-full mt-5">
+            No forms yet.
+          </p>
+        )}
       </div>
     </div>
   );

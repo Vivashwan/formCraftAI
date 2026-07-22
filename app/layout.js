@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "./_components/Header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "./_components/ThemeProvider";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,11 +16,20 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
-      <html lang="en" data-theme="cupcake">
-        <body className={inter.className}>
-          <Header />
-          <Toaster />
-          {children}
+      {/* No root data-theme: the form PREVIEW sets its own data-theme (daisyUI)
+          on the <form> element. next-themes toggles the `.dark` class that
+          drives the app's shadcn CSS variables + color-scheme. */}
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${inter.className} min-h-screen bg-background`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+          >
+            <Header />
+            <Toaster />
+            {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
