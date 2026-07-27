@@ -53,7 +53,13 @@ function FormListItem({ formRecord, jsonForm, refreshData }) {
 
   const onDuplicateForm = async () => {
     try {
-      await duplicateForm(formRecord.id);
+      const res = await duplicateForm(formRecord.id);
+      if (res?.error === "LIMIT") {
+        toast.error(
+          "You've reached the free plan limit of 3 forms. Upgrade to Pro to add more."
+        );
+        return;
+      }
       toast("Form duplicated!");
       refreshData ? refreshData() : window.location.reload();
     } catch (error) {

@@ -15,7 +15,12 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
       {/* No root data-theme: the form PREVIEW sets its own data-theme (daisyUI)
           on the <form> element. next-themes toggles the `.dark` class that
           drives the app's shadcn CSS variables + color-scheme. */}

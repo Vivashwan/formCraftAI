@@ -69,7 +69,12 @@ export default function Page() {
                 on what matters most.
               </p>
             </div>
-            <SignIn />
+            <SignIn
+              routing="path"
+              path="/sign-in"
+              signUpUrl="/sign-up"
+              fallbackRedirectUrl="/dashboard"
+            />
           </div>
         </main>
       </div>

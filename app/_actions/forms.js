@@ -70,6 +70,21 @@ async function getOwnedFormById(email, id) {
   return rows[0] || null;
 }
 
+// True when a free (non-paid) user has already hit the form cap. Enforced on
+// both create and duplicate so neither path can exceed the limit.
+async function isAtFreeLimit(email) {
+  const forms = await db
+    .select()
+    .from(JsonForms)
+    .where(eq(JsonForms.createdBy, email));
+  const userRows = await db
+    .select()
+    .from(Users)
+    .where(eq(Users.email, email));
+  const isPaid = userRows?.[0]?.paymentSuccess === true;
+  return !isPaid && forms.length >= FREE_FORM_LIMIT;
+}
+
 export async function getMyForms() {
   const email = await requireEmail();
   return db
@@ -105,16 +120,7 @@ export async function createForm(description) {
   if (!description?.trim()) return { error: "EMPTY" };
 
   // Enforce the free-plan limit on the server (client checks are advisory).
-  const forms = await db
-    .select()
-    .from(JsonForms)
-    .where(eq(JsonForms.createdBy, email));
-  const userRows = await db
-    .select()
-    .from(Users)
-    .where(eq(Users.email, email));
-  const isPaid = userRows?.[0]?.paymentSuccess === true;
-  if (!isPaid && forms.length >= FREE_FORM_LIMIT) {
+  if (await isAtFreeLimit(email)) {
     return { error: "LIMIT" };
   }
 
@@ -216,6 +222,8 @@ export async function renameForm(id, title) {
 
 export async function duplicateForm(id) {
   const email = await requireEmail();
+  // Duplicating creates a new form, so it counts against the free-plan cap.
+  if (await isAtFreeLimit(email)) return { error: "LIMIT" };
   const form = await getOwnedFormById(email, id);
   if (!form) throw new Error("Not found");
   let parsed = {};

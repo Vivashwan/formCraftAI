@@ -304,6 +304,35 @@ Vitest covers the pure logic that most needs guarding:
   `applyFieldPatch`, validation-rule persistence.
 - `__tests__/rateLimit.test.js` — sliding-window limiter.
 
+### Testing the payment flow (Razorpay test mode)
+
+With **test** keys (`RAZORPAY_KEY_ID=rzp_test_…`), no real money moves. To reach
+the pay screen you must be **signed in** and treated as **free**
+(`users.paymentSuccess = false`); paid users don’t see it. Then open
+**Dashboard → Upgrade → Pay** and use one of the following.
+
+**UPI (recommended — avoids the “international cards not allowed” error):**
+- `success@razorpay` → simulates a **successful** payment
+- `failure@razorpay` → simulates a **failed** payment
+
+**Test card:**
+- Number: `4111 1111 1111 1111`
+- Expiry: any future date (e.g. `12/34`)
+- CVV: any 3 digits (e.g. `123`)
+- Name: anything; on the 3-D Secure page click **Success**.
+- If this is rejected as international, use the UPI method above or a domestic
+  test card from Razorpay’s official list:
+  <https://razorpay.com/docs/payments/payments/test-card-details/>
+
+**Netbanking / wallet:** pick any option → Razorpay shows a Success/Failure page.
+
+**Contact/prefill:** any 10-digit number (e.g. `9999999999`) and any email.
+
+> On success the server verifies the HMAC signature and flips
+> `paymentSuccess = true`, lifting the 3-form free cap. Do **not** create a
+> `NEXT_PUBLIC_RAZORPAY_*` variable — the client receives the key id from the
+> server order response, and prefixing it would leak the key.
+
 ---
 
 ## Conventions & gotchas
