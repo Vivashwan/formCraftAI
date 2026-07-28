@@ -55,7 +55,7 @@ function Controller({
 
   return (
     <div>
-      <h2 className="my-1">Themes</h2>
+      <h2 className="text-base font-semibold mb-1">Themes</h2>
 
       <Select onValueChange={(value) => selectedTheme(value)}>
         <SelectTrigger className="w-full">
@@ -117,7 +117,7 @@ function Controller({
         </Popover>
       </div>
 
-      <h2 className="mt-8 my-1">Background</h2>
+      <h2 className="text-base font-semibold mt-8 mb-1">Background</h2>
       <div className="grid grid-cols-3 gap-5">
         {GradientBg.map(
           (bg, index) =>
@@ -169,7 +169,7 @@ function Controller({
       </Button>
 
       <div>
-        <label>Style</label>
+        <label className="text-base font-semibold">Style</label>
         <div className="grid grid-cols-3 gap-3 mt-1">
           {Style.map(
             (item, index) =>
