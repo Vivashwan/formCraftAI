@@ -408,7 +408,10 @@ function FormUi({
       case "select":
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Select
               value={formData[fieldName] || ""}
               onValueChange={(v) => handleSelectChange(fieldName, v)}
@@ -429,7 +432,10 @@ function FormUi({
       case "checkbox":
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             {options.map((item, idx) => (
               <div key={idx} className="flex gap-2 items-center">
                 <Checkbox
@@ -447,7 +453,10 @@ function FormUi({
       case "radiogroup":
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <RadioGroup
               value={formData[fieldName] || ""}
               onValueChange={(v) => handleRadioChange(fieldName, v)}
@@ -471,7 +480,10 @@ function FormUi({
         const current = Number(formData[fieldName]) || 0;
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -498,7 +510,10 @@ function FormUi({
         const allowed = getFileTypes(field);
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Input
               type="file"
               className="bg-white text-gray-900"
@@ -528,7 +543,10 @@ function FormUi({
       case "textarea":
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Textarea
               className="bg-white text-gray-900 placeholder:text-gray-400"
               placeholder={placeholderName || "Enter value"}
@@ -569,7 +587,10 @@ function FormUi({
           const number = phoneNumbers[fieldName] || "";
           return (
             <div className="my-1 w-full">
-              <label className="text-xs">{fieldLabel}</label>
+              <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
               <div className="flex gap-2">
                 <Select
                   value={code}
@@ -623,7 +644,10 @@ function FormUi({
         }
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Input
               type="tel"
               inputMode="numeric"
@@ -649,7 +673,10 @@ function FormUi({
       case "email":
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Input
               type="email"
               className="bg-white text-gray-900 placeholder:text-gray-400"
@@ -669,7 +696,10 @@ function FormUi({
       default:
         return (
           <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
+            <label className="text-xs">
+              {fieldLabel}
+              {isRequired && <span className="text-red-500"> *</span>}
+            </label>
             <Input
               type="text"
               className="bg-white text-gray-900 placeholder:text-gray-400"
