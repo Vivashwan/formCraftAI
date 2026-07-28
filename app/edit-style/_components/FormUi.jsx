@@ -780,9 +780,11 @@ function FormUi({
 
   const submitButton =
     !enabledSignIn || isSignedIn ? (
-      <button
+      // Use the shadcn Button (like "Next") for a solid, always-readable button
+      // — daisyUI's btn-primary depends on a data-theme that custom-color forms
+      // don't set, which broke the text contrast.
+      <Button
         type="submit"
-        className="btn btn-primary"
         disabled={disableSubmit || !pageComplete || submitting}
       >
         {submitting ? (
@@ -792,7 +794,7 @@ function FormUi({
         ) : (
           "Submit"
         )}
-      </button>
+      </Button>
     ) : (
       <Button>
         <SignInButton mode="modal">Sign In before submitting !!!</SignInButton>
