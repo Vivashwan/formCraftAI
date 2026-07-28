@@ -315,14 +315,22 @@ the pay screen you must be **signed in** and treated as **free**
 - `success@razorpay` → simulates a **successful** payment
 - `failure@razorpay` → simulates a **failed** payment
 
-**Test card:**
-- Number: `4111 1111 1111 1111`
+**Indian (domestic) test card — use this if cards show “international not allowed”:**
+- Number: `5267 3181 8797 5449` (Mastercard, domestic)
 - Expiry: any future date (e.g. `12/34`)
 - CVV: any 3 digits (e.g. `123`)
-- Name: anything; on the 3-D Secure page click **Success**.
-- If this is rejected as international, use the UPI method above or a domestic
-  test card from Razorpay’s official list:
-  <https://razorpay.com/docs/payments/payments/test-card-details/>
+- OTP on the test bank page: `1234`, or click **Success**
+- Name: anything
+
+**Generic test card (may be flagged international on Indian accounts):**
+- Number: `4111 1111 1111 1111`
+- Expiry: any future date · CVV: any 3 digits · click **Success** on the 3-D
+  Secure page.
+
+> Razorpay occasionally rotates its test cards, and whether a card counts as
+> domestic depends on the account. The authoritative list is here (use the one
+> marked *Domestic / India*): <https://razorpay.com/docs/payments/payments/test-card-details/>.
+> When in doubt, UPI `success@razorpay` always works.
 
 **Netbanking / wallet:** pick any option → Razorpay shows a Success/Failure page.
 
