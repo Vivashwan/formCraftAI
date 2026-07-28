@@ -528,12 +528,12 @@ function FormUi({
               }
             />
             {allowed.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs opacity-70 mt-1">
                 Allowed: {allowed.join(", ")}
               </p>
             )}
             {formData[fieldName]?.name && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs opacity-70 mt-1">
                 Selected: {formData[fieldName].name}
               </p>
             )}
@@ -748,7 +748,7 @@ function FormUi({
           aria-label="Move up"
           disabled={index === 0}
           onClick={() => onMoveField(index, index - 1)}
-          className="text-gray-400 hover:text-black disabled:opacity-30"
+          className="opacity-50 hover:opacity-100 disabled:opacity-20"
         >
           <ChevronUp className="h-4 w-4" />
         </button>
@@ -757,7 +757,7 @@ function FormUi({
           aria-label="Move down"
           disabled={index === formFields.length - 1}
           onClick={() => onMoveField(index, index + 1)}
-          className="text-gray-400 hover:text-black disabled:opacity-30"
+          className="opacity-50 hover:opacity-100 disabled:opacity-20"
         >
           <ChevronDown className="h-4 w-4" />
         </button>
@@ -1000,7 +1000,7 @@ function FormUi({
                     className="cursor-grab mr-1 shrink-0"
                     aria-label="Drag to reorder"
                   >
-                    <GripVertical className="h-4 w-4 text-gray-400" />
+                    <GripVertical className="h-4 w-4 opacity-50" />
                   </span>
                 )}
                 {renderField(field, index)}
@@ -1031,7 +1031,7 @@ function FormUi({
 
       {multiPage ? (
         <div className="flex items-center justify-between mt-5">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs opacity-70">
             Step {currentPage + 1} of {pages.length}
           </span>
           <div className="flex gap-2">

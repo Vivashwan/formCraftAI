@@ -174,7 +174,7 @@ function DateField({
               onKeyDown={(e) => onPartKeyDown(e, part, idx)}
             />
             {idx < order.length - 1 && (
-              <span className="text-gray-500 select-none">{sep}</span>
+              <span className="opacity-60 select-none">{sep}</span>
             )}
           </React.Fragment>
         ))}

@@ -103,7 +103,9 @@ function FieldEdit({ defaultValue, onUpdate, deleteField, fields = [] }) {
       <Popover open={isPopoverOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="ghost" className="p-0">
-            <Edit className="h-4 w-4 text-gray-600" />
+            {/* Inherit the form's text color so it stays visible on any
+                background (hardcoded gray disappeared on some themes). */}
+            <Edit className="h-4 w-4 opacity-70 hover:opacity-100" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-4 w-80 max-h-[70vh] overflow-y-auto">
@@ -127,7 +129,9 @@ function FieldEdit({ defaultValue, onUpdate, deleteField, fields = [] }) {
       {/* Alert Dialog for deleting */}
       <AlertDialog>
         <AlertDialogTrigger>
-          <Trash className="h-4 w-4 text-red-500" />
+          {/* Inherit currentColor for visibility on any form background; turn
+              red on hover to signal the destructive action. */}
+          <Trash className="h-4 w-4 opacity-70 hover:opacity-100 hover:text-red-600" />
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>

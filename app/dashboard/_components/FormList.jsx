@@ -4,6 +4,16 @@ import React, { useEffect, useState } from "react";
 import FormListItem from "./FormListItem";
 import { getMyForms } from "@/app/_actions/forms";
 
+// Tolerate a malformed jsonform (e.g. a bad AI generation) so one corrupt
+// record can't crash the whole dashboard on JSON.parse.
+const safeParse = (value) => {
+  try {
+    return JSON.parse(value || "{}");
+  } catch (e) {
+    return {};
+  }
+};
+
 function FormList() {
   const { user } = useUser();
   const [formList, setFormList] = useState([]);
@@ -48,7 +58,7 @@ function FormList() {
       {formList.map((form, index) => (
         <div key={index}>
           <FormListItem
-            jsonForm={JSON.parse(form.jsonform)}
+            jsonForm={safeParse(form.jsonform)}
             formRecord={form}
             refreshData={GetFormList}
           />

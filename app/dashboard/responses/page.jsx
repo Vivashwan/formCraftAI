@@ -4,6 +4,15 @@ import React, { useEffect, useState } from "react";
 import FormListItemResponse from "./_components/FormListItemResponse";
 import { getMyForms } from "@/app/_actions/forms";
 
+// Tolerate a malformed jsonform so one corrupt record can't crash the page.
+const safeParse = (value) => {
+  try {
+    return JSON.parse(value || "{}");
+  } catch (e) {
+    return {};
+  }
+};
+
 function Responses() {
   const { user } = useUser();
 
@@ -42,7 +51,7 @@ function Responses() {
             <FormListItemResponse
               key={index}
               formRecord={form}
-              jsonForm={JSON.parse(form.jsonform)}
+              jsonForm={safeParse(form.jsonform)}
             />
           ))
         ) : (

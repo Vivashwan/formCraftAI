@@ -124,16 +124,46 @@ export async function createForm(description) {
     return { error: "LIMIT" };
   }
 
-  const result = await AiChatSession.sendMessage(
-    "Description: " + description + PROMPT
-  );
-  const text = result.response.text();
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("createForm: GEMINI_API_KEY is not set");
+    return { error: "AI_FAILED" };
+  }
+
+  let text;
+  try {
+    const result = await AiChatSession.sendMessage(
+      "Description: " + description + PROMPT
+    );
+    text = result.response.text();
+  } catch (e) {
+    // Surface the real reason in server logs (Vercel Functions) — bad/expired
+    // key, quota, model access, etc. — instead of an opaque server crash.
+    console.error("createForm: Gemini request failed:", e?.message || e);
+    return { error: "AI_FAILED" };
+  }
   if (!text) return { error: "AI_FAILED" };
+
+  // Strip stray markdown fences the model sometimes adds despite the prompt.
+  const cleaned = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  // Only persist output that actually parses. A truncated/garbled generation
+  // must never be saved — a bad jsonform would otherwise crash every consumer
+  // that JSON.parse()s it (dashboard, editor, responses).
+  try {
+    JSON.parse(cleaned);
+  } catch (e) {
+    console.error("createForm: AI returned invalid JSON:", e?.message || e);
+    return { error: "AI_FAILED" };
+  }
 
   const resp = await db
     .insert(JsonForms)
     .values({
-      jsonform: text,
+      jsonform: cleaned,
       createdBy: email,
       createdAt: moment().format("DD/MM/yyyy"),
     })
