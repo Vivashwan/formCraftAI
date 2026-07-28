@@ -1036,13 +1036,17 @@ function FormUi({
           </span>
           <div className="flex gap-2">
             {currentPage > 0 && (
-              <Button
+              // Uses the form's own text color (currentColor) so it stays
+              // visible on any theme — the shadcn "outline" variant is tied to
+              // the app palette, not the form's, and goes invisible on dark/
+              // custom-colored forms.
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => setCurrentPage((p) => p - 1)}
+                className="px-4 py-2 rounded-md border border-current text-sm font-medium opacity-90 hover:opacity-70 transition-opacity"
               >
                 Back
-              </Button>
+              </button>
             )}
             {currentPage < pages.length - 1 ? (
               <Button type="button" onClick={handleNext} disabled={!pageComplete}>

@@ -82,7 +82,7 @@ function ShareDialog({ url, title, trigger }) {
               readOnly
               value={embedCode}
               onFocus={(e) => e.target.select()}
-              className="w-full text-xs border rounded-md p-2 h-20 font-mono bg-gray-50"
+              className="w-full text-xs border rounded-md p-2 h-20 font-mono bg-gray-50 text-gray-900"
             />
             <Button
               size="sm"

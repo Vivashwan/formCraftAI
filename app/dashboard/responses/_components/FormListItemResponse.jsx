@@ -871,7 +871,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
                           onClick={() => toggleSort("__submitted")}
                         />
                       </TableHead>
-                      <TableHead className="w-20 text-right">Actions</TableHead>
+                      <TableHead className="w-16 text-right">View</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -916,13 +916,6 @@ function FormListItemResponse({ jsonForm, formRecord }) {
                                 aria-label="View response"
                               >
                                 <Eye className="h-4 w-4" />
-                              </button>
-                              <button
-                                className="p-1 text-gray-500 hover:text-red-600"
-                                onClick={() => setPendingDelete(r.id)}
-                                aria-label="Delete response"
-                              >
-                                <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
                           </TableCell>
