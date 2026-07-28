@@ -61,15 +61,64 @@ export function getFieldRules(field) {
     maxLength: toInt(v.maxLength),
     min: toNum(v.min),
     max: toNum(v.max),
+    minDate: v.minDate ? String(v.minDate) : null,
+    maxDate: v.maxDate ? String(v.maxDate) : null,
+    dateFormat: v.dateFormat ? String(v.dateFormat) : null,
     pattern: v.pattern ? String(v.pattern) : null,
     message: v.message ? String(v.message) : null,
   };
 }
 
+// Display-format choices for a calendar field. The value is stored as ISO
+// (YYYY-MM-DD); the owner picks how it's shown in responses/sheet/email.
+export const DATE_FORMATS = [
+  { value: "DD/MM/YYYY", label: "DD/MM/YYYY (31/12/2026)" },
+  { value: "MM/DD/YYYY", label: "MM/DD/YYYY (12/31/2026)" },
+  { value: "YYYY-MM-DD", label: "YYYY-MM-DD (2026-12-31)" },
+  { value: "DD-MM-YYYY", label: "DD-MM-YYYY (31-12-2026)" },
+  { value: "DD MMM YYYY", label: "DD MMM YYYY (31 Dec 2026)" },
+];
+
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// Formats an ISO date string ("YYYY-MM-DD") into the chosen display format.
+// Falls back to the raw value if it isn't an ISO date.
+export function formatDateValue(value, format) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ""));
+  if (!m) return value == null ? "" : String(value);
+  const [, y, mo, d] = m;
+  switch (format) {
+    case "MM/DD/YYYY":
+      return `${mo}/${d}/${y}`;
+    case "YYYY-MM-DD":
+      return `${y}-${mo}-${d}`;
+    case "DD-MM-YYYY":
+      return `${d}-${mo}-${y}`;
+    case "DD MMM YYYY":
+      return `${d} ${MONTHS_SHORT[Number(mo) - 1] || mo} ${y}`;
+    case "DD/MM/YYYY":
+    default:
+      return `${d}/${mo}/${y}`;
+  }
+}
+
 function normalizeValidation(v) {
   if (!v || typeof v !== "object") return undefined;
   const out = {};
-  for (const k of ["minLength", "maxLength", "min", "max", "pattern", "message"]) {
+  for (const k of [
+    "minLength",
+    "maxLength",
+    "min",
+    "max",
+    "minDate",
+    "maxDate",
+    "dateFormat",
+    "pattern",
+    "message",
+  ]) {
     if (v[k] !== undefined && v[k] !== null && String(v[k]).trim() !== "") {
       out[k] = v[k];
     }

@@ -14,6 +14,7 @@ import {
   deleteRowByMatch,
 } from "@/app/_lib/googleSheets";
 import {
+  formatDateValue,
   getEffectiveType,
   getFieldLabel,
   getFieldName,
@@ -46,6 +47,18 @@ function validateFieldRules(formFields, data) {
       const err = phoneLengthError(str);
       if (err) return `"${label}": ${rules.message || err}`;
       continue; // length OK; skip generic digit rules for phones
+    }
+    if (type === "calendar") {
+      const fmtDate = (d) => formatDateValue(d, rules.dateFormat);
+      if (Number.isNaN(Date.parse(str)))
+        return `"${label}": ${fail("please enter a valid date")}`;
+      const belowMin = rules.minDate && str < rules.minDate;
+      const aboveMax = rules.maxDate && str > rules.maxDate;
+      if (belowMin || aboveMax)
+        return `"${label}": ${fail(
+          `allowed ${fmtDate(rules.minDate)} – ${fmtDate(rules.maxDate)}`
+        )}`;
+      continue;
     }
     if (type === "digits") {
       const num = parseFloat(str.replace(/[^0-9.\-]/g, ""));
@@ -87,6 +100,16 @@ function formatEmailValue(v) {
   return String(v);
 }
 
+// Field-aware plain text for a value: calendar values are stored as ISO but
+// rendered in the field's chosen display format for the sheet/email.
+function fieldDisplay(field, value) {
+  if (normalizeType(field?.fieldType) === "calendar" && value) {
+    const fmt = getFieldRules(field).dateFormat;
+    if (fmt) return formatDateValue(value, fmt);
+  }
+  return formatEmailValue(value);
+}
+
 // Best-effort email to the form owner summarizing a new response.
 async function notifyOwner(form, data, responseId) {
   const to = form.createdBy;
@@ -110,7 +133,7 @@ async function notifyOwner(form, data, responseId) {
         const url = `${base}api/file/${responseId}/${encodeURIComponent(key)}`;
         cell = `<a href="${url}">${escapeHtml(value.name || "Download file")}</a>`;
       } else {
-        cell = escapeHtml(formatEmailValue(value));
+        cell = escapeHtml(fieldDisplay(f, value));
       }
       return `<tr><td style="padding:6px 10px;font-weight:600;border-bottom:1px solid #eee;">${escapeHtml(
         getFieldLabel(f)
@@ -172,6 +195,14 @@ async function syncToSheet(form, data, responseId) {
   );
   const base = process.env.NEXT_PUBLIC_BASE_URL || "";
 
+  // Sheets (USER_ENTERED) treats a cell starting with = + - @ as a formula, so
+  // a value like a phone "+91 98…" errors. Prefix a literal apostrophe to force
+  // plain text (the apostrophe isn't shown). Never applied to our own formulas.
+  const sheetSafe = (v) => {
+    const s = v == null ? "" : String(v);
+    return /^[=+\-@]/.test(s) ? `'${s}` : s;
+  };
+
   const cell = (field) => {
     const key = getFieldName(field);
     const value = data?.[key];
@@ -182,11 +213,15 @@ async function syncToSheet(form, data, responseId) {
       const name = String(value.name || "file").replace(/"/g, "'");
       return `=HYPERLINK("${url}","${name}")`;
     }
-    return formatEmailValue(value);
+    return sheetSafe(fieldDisplay(field, value));
   };
 
   // "Response ID" lets us find and delete this exact row later.
-  const header = [...fields.map((f) => getFieldLabel(f)), "Submitted", "Response ID"];
+  const header = [
+    ...fields.map((f) => sheetSafe(getFieldLabel(f))),
+    "Submitted",
+    "Response ID",
+  ];
   const row = [
     ...fields.map(cell),
     moment().format("YYYY-MM-DD HH:mm:ss"),

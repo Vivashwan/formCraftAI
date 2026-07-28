@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import FieldEdit from "./FieldEdit";
 import FormHeaderEdit from "./FormHeaderEdit";
+import DateField from "./DateField";
 import { submitResponse } from "@/app/_actions/responses";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import {
   getFieldRequired,
   getFieldRules,
   getFileTypes,
+  formatDateValue,
   isPageBreak,
   isPhoneField,
   normalizeType,
@@ -96,16 +98,26 @@ function FormUi({
   const validationTimers = useRef({});
   const [phoneCodes, setPhoneCodes] = useState({}); // per phone field: dial code
   const [phoneNumbers, setPhoneNumbers] = useState({}); // per phone field: number
+  const [redirecting, setRedirecting] = useState(false); // post-submit redirect
+  const [redirectProgress, setRedirectProgress] = useState(false);
   let formReference = useRef();
   const { user, isSignedIn } = useUser();
 
-  const handleInputChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  // After a successful submit with a redirect URL, show the thank-you screen
+  // briefly (with an animated progress bar), then navigate — instead of an
+  // abrupt jump that skips the thank-you message entirely.
+  const REDIRECT_DELAY_MS = 2600;
+  useEffect(() => {
+    if (!redirecting || !redirectUrl) return;
+    const start = setTimeout(() => setRedirectProgress(true), 60); // trigger CSS
+    const go = setTimeout(() => {
+      window.location.href = redirectUrl;
+    }, REDIRECT_DELAY_MS);
+    return () => {
+      clearTimeout(start);
+      clearTimeout(go);
+    };
+  }, [redirecting, redirectUrl]);
 
   // Returns a validation error string for a non-empty value, or null if valid.
   // Emptiness is handled separately by the required-field check. Covers email
@@ -122,6 +134,21 @@ function FormUi({
     // Phone: validate the national number length against the selected country.
     if (type === "digits" && isPhoneField(field)) {
       return custom || phoneLengthError(str); // null when length is OK
+    }
+    // Date: must be a real date within the owner-defined min/max range.
+    if (type === "calendar") {
+      if (Number.isNaN(Date.parse(str)))
+        return custom || "Please enter a valid date.";
+      const fmt = (d) => formatDateValue(d, rules.dateFormat);
+      const belowMin = rules.minDate && str < rules.minDate;
+      const aboveMax = rules.maxDate && str > rules.maxDate;
+      if (belowMin || aboveMax) {
+        return (
+          custom ||
+          `Allowed: ${fmt(rules.minDate)} – ${fmt(rules.maxDate)}`
+        );
+      }
+      return null;
     }
     if (type === "digits") {
       const num = parseFloat(str.replace(/[^0-9.\-]/g, ""));
@@ -349,12 +376,13 @@ function FormUi({
         setPhoneCodes({});
         setPhoneNumbers({});
         setHoneypot("");
-        // Redirect if the form owner set a redirect URL, else show thank-you.
-        if (redirectUrl && redirectUrl.trim()) {
-          window.location.href = redirectUrl;
-          return;
-        }
+        // Always show the thank-you screen first. If a redirect URL is set, the
+        // effect above navigates after a short, visible delay (so the thank-you
+        // message isn't skipped and the transition isn't abrupt).
         setSubmitted(true);
+        if (redirectUrl && redirectUrl.trim()) {
+          setRedirecting(true);
+        }
       } else {
         toast.error(result?.error || "Submission was not accepted.");
       }
@@ -516,20 +544,22 @@ function FormUi({
             )}
           </div>
         );
-      case "calendar":
+      case "calendar": {
+        const dateRules = getFieldRules(field);
         return (
-          <div className="my-1 w-full">
-            <label className="text-xs">{fieldLabel}</label>
-            <Input
-              type="date"
-              className="bg-white text-gray-900"
-              name={fieldName}
-              required={isRequired}
-              value={formData[fieldName] || ""}
-              onChange={handleInputChange}
-            />
-          </div>
+          <DateField
+            label={fieldLabel}
+            value={formData[fieldName] || ""}
+            format={dateRules.dateFormat}
+            minDate={dateRules.minDate}
+            maxDate={dateRules.maxDate}
+            required={isRequired}
+            onChange={(v) =>
+              setFormData((prev) => ({ ...prev, [fieldName]: v }))
+            }
+          />
         );
+      }
       case "digits": {
         // Phone fields get a dialing-code picker; plain numbers stay a single
         // input. The stored value is "<code> <number>" so it's complete in the
@@ -761,7 +791,7 @@ function FormUi({
   if (submitted) {
     return (
       <div
-        className={`border p-8 md:w-[600px] rounded-lg text-center ${containerTextClass}`}
+        className={`border p-8 md:w-[600px] rounded-lg text-center animate-in fade-in zoom-in-95 duration-700 ${containerTextClass}`}
         data-theme={themeAttr}
         style={containerStyle}
       >
@@ -773,18 +803,46 @@ function FormUi({
           <p className="text-sm">
             {thankYouDescription || "Your response has been recorded."}
           </p>
-          <Button
-            type="button"
-            className="mt-3"
-            onClick={() => {
-              setFormData({});
-              setPhoneCodes({});
-              setPhoneNumbers({});
-              setSubmitted(false);
-            }}
-          >
-            Submit another response
-          </Button>
+
+          {redirecting ? (
+            /* Smooth hand-off: keep the thank-you visible, fill a progress bar,
+               then navigate (handled by the effect). */
+            <div className="mt-4 w-full max-w-xs">
+              <p className="text-sm opacity-80 mb-2">Taking you to the next page…</p>
+              <div className="h-1.5 w-full rounded-full bg-gray-300/60 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-green-500 ease-linear"
+                  style={{
+                    width: redirectProgress ? "100%" : "0%",
+                    transitionProperty: "width",
+                    transitionDuration: `${REDIRECT_DELAY_MS - 100}ms`,
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (redirectUrl) window.location.href = redirectUrl;
+                }}
+                className="text-xs underline opacity-70 hover:opacity-100 mt-3"
+              >
+                Continue now
+              </button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              className="mt-3"
+              onClick={() => {
+                setFormData({});
+                setPhoneCodes({});
+                setPhoneNumbers({});
+                setSubmitted(false);
+              }}
+            >
+              Submit another response
+            </Button>
+          )}
         </div>
       </div>
     );

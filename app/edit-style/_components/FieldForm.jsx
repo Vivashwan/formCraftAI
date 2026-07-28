@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 import {
+  DATE_FORMATS,
   FIELD_TYPES,
   getFieldLabel,
   getFieldName,
@@ -87,6 +88,7 @@ function FieldForm({ value, onChange, fields = [], selfName = "" }) {
     set({ validation: { ...validation, ...patch } });
   const textLike = ["text", "textarea", "email"].includes(value.fieldType);
   const numberLike = value.fieldType === "digits";
+  const calendarLike = value.fieldType === "calendar";
 
   // Format dropdown: figure out which preset (if any) the stored pattern is.
   const patternVal = validation.pattern ?? "";
@@ -252,9 +254,57 @@ function FieldForm({ value, onChange, fields = [], selfName = "" }) {
       </div>
 
       {/* Validation rules */}
-      {(textLike || numberLike) && (
+      {(textLike || numberLike || calendarLike) && (
         <div className="pt-2 border-t">
-          <div className="text-sm font-medium mb-2">Validation (optional)</div>
+          <div className="text-sm font-medium mb-2">
+            {calendarLike ? "Validation" : "Validation (optional)"}
+          </div>
+          {calendarLike && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs block mb-1">
+                    Earliest date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={validation.minDate ?? ""}
+                    onChange={(e) => setVal({ minDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs block mb-1">
+                    Latest date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={validation.maxDate ?? ""}
+                    onChange={(e) => setVal({ maxDate: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="mt-2">
+                <label className="text-xs block mb-1">
+                  Date format <span className="text-red-500">*</span>
+                </label>
+                <Select
+                  value={validation.dateFormat ?? ""}
+                  onValueChange={(v) => setVal({ dateFormat: v })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a format" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DATE_FORMATS.map((f) => (
+                      <SelectItem key={f.value} value={f.value}>
+                        {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
           {textLike && (
             <div className="grid grid-cols-2 gap-2">
               <div>

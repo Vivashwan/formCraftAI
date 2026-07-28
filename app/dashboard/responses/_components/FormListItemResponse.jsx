@@ -52,9 +52,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  formatDateValue,
   getFieldLabel,
   getFieldName,
   getFieldOptions,
+  getFieldRules,
   isPageBreak,
   normalizeType,
 } from "@/app/_data/fieldUtils";
@@ -176,29 +178,70 @@ function FormListItemResponse({ jsonForm, formRecord }) {
     return String(value);
   };
 
-  // Builds table columns (form field order + any extra keys found in responses).
+  // Column-aware display: calendar values are stored as ISO but shown in the
+  // field's chosen date format; everything else uses formatValue.
+  const displayValue = (col, value) => {
+    if (col?.type === "calendar" && col?.dateFormat && value) {
+      return formatDateValue(value, col.dateFormat);
+    }
+    return formatValue(value);
+  };
+
+  // Builds table columns. Surviving form fields keep their form order; a field
+  // that was later deleted still appears in the stored responses, so instead of
+  // dumping such columns at the end we slot each one back into the position it
+  // held at submission time — right after the nearest surviving field that
+  // preceded it in the response data (whose key order reflects the old layout).
   const buildColumns = (parsedResponses) => {
     const fields = getFormFields();
-    const cols = [];
-    const seen = new Set();
+    const cols = []; // ordered keys
+    const label = {};
+    const meta = {}; // key -> { type, dateFormat }
 
     fields.forEach((field) => {
       const key = getFieldName(field);
-      if (!key || seen.has(key)) return;
-      seen.add(key);
-      cols.push({ key, label: getFieldLabel(field) || key });
+      if (!key || key in label) return;
+      label[key] = getFieldLabel(field) || key;
+      meta[key] = {
+        type: normalizeType(field.fieldType),
+        dateFormat: getFieldRules(field).dateFormat,
+      };
+      cols.push(key);
     });
+    const isFormField = new Set(cols);
 
+    // Collect deleted keys with the anchor (preceding surviving field) they were
+    // first seen next to.
+    const anchorFor = {};
     parsedResponses.forEach((r) => {
-      Object.keys(r.data || {}).forEach((key) => {
-        if (!seen.has(key)) {
-          seen.add(key);
-          cols.push({ key, label: key });
+      const keys = Object.keys(r.data || {});
+      keys.forEach((key, i) => {
+        if (isFormField.has(key) || key in anchorFor) return;
+        let anchor = null;
+        for (let j = i - 1; j >= 0; j--) {
+          if (isFormField.has(keys[j])) {
+            anchor = keys[j];
+            break;
+          }
         }
+        anchorFor[key] = anchor; // null → belonged before any surviving field
       });
     });
 
-    return cols;
+    // Insert each deleted key just after its anchor (or at the front).
+    Object.keys(anchorFor).forEach((key) => {
+      label[key] = key;
+      const anchor = anchorFor[key];
+      const at = anchor == null ? 0 : cols.indexOf(anchor) + 1;
+      cols.splice(at, 0, key);
+    });
+
+    return cols.map((key) => ({
+      key,
+      label: label[key],
+      type: meta[key]?.type,
+      dateFormat: meta[key]?.dateFormat,
+    }));
   };
 
   // Fetches responses and updates the table/summary. `silent` skips the spinner
@@ -320,7 +363,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
     const exportRows = sorted.map((r) => {
       const out = {};
       columns.forEach((c) => {
-        out[c.label] = formatValue(r.data?.[c.key]);
+        out[c.label] = displayValue(c, r.data?.[c.key]);
       });
       out["Submitted"] = r.createdAt;
       return out;
@@ -349,7 +392,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
 
   // --- Search / sort / pagination over the responses table ---
   const rowText = (r) =>
-    [...columns.map((c) => formatValue(r.data?.[c.key])), r.createdAt || ""]
+    [...columns.map((c) => displayValue(c, r.data?.[c.key])), r.createdAt || ""]
       .join(" ")
       .toLowerCase();
 
@@ -459,7 +502,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
     const lines = [header.map(escapeCsv).join(",")];
     sorted.forEach((r) => {
       const cells = [
-        ...columns.map((c) => formatValue(r.data?.[c.key])),
+        ...columns.map((c) => displayValue(c, r.data?.[c.key])),
         r.createdAt,
       ];
       lines.push(cells.map(escapeCsv).join(","));
@@ -625,7 +668,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
                             {value.name || "Download file"}
                           </a>
                         ) : (
-                          formatValue(value) || (
+                          displayValue(c, value) || (
                             <span className="text-gray-300">—</span>
                           )
                         )}
@@ -859,7 +902,7 @@ function FormListItemResponse({ jsonForm, formRecord }) {
                           </TableCell>
                           {columns.map((c) => (
                             <TableCell key={c.key}>
-                              {formatValue(r.data?.[c.key])}
+                              {displayValue(c, r.data?.[c.key])}
                             </TableCell>
                           ))}
                           <TableCell className="whitespace-nowrap text-gray-500">

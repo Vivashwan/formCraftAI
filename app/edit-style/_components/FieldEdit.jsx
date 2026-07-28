@@ -74,6 +74,16 @@ function FieldEdit({ defaultValue, onUpdate, deleteField, fields = [] }) {
       toast.error("Please select at least one allowed file type.");
       return;
     }
+    if (def.fieldType === "calendar") {
+      if (!def.validation?.minDate || !def.validation?.maxDate) {
+        toast.error("Please set both an earliest and latest date.");
+        return;
+      }
+      if (!def.validation?.dateFormat) {
+        toast.error("Please choose a date format.");
+        return;
+      }
+    }
     onUpdate({
       label: def.label,
       placeholder: def.placeholder,

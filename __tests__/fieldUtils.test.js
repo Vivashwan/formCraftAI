@@ -13,6 +13,7 @@ import {
   getFieldRules,
   makeField,
   applyFieldPatch,
+  formatDateValue,
 } from "@/app/_data/fieldUtils";
 
 // The two real shapes Gemini produced (from the live DB): one uses
@@ -235,6 +236,9 @@ describe("getFieldRules", () => {
       maxLength: null,
       min: null,
       max: null,
+      minDate: null,
+      maxDate: null,
+      dateFormat: null,
       pattern: null,
       message: null,
     });
@@ -248,6 +252,22 @@ describe("getFieldRules", () => {
     expect(r.max).toBe(100);
     expect(r.message).toBe("out of range");
     expect(r.minLength).toBeNull();
+  });
+  it("formats an ISO date into the chosen display format", () => {
+    expect(formatDateValue("2026-12-31", "DD/MM/YYYY")).toBe("31/12/2026");
+    expect(formatDateValue("2026-12-31", "MM/DD/YYYY")).toBe("12/31/2026");
+    expect(formatDateValue("2026-12-31", "YYYY-MM-DD")).toBe("2026-12-31");
+    expect(formatDateValue("2026-01-05", "DD MMM YYYY")).toBe("05 Jan 2026");
+    expect(formatDateValue("", "DD/MM/YYYY")).toBe("");
+    expect(formatDateValue("not-a-date", "DD/MM/YYYY")).toBe("not-a-date");
+  });
+  it("keeps min/max date rules for a calendar field", () => {
+    const r = getFieldRules({
+      fieldType: "calendar",
+      validation: { minDate: "2020-01-01", maxDate: "2030-12-31" },
+    });
+    expect(r.minDate).toBe("2020-01-01");
+    expect(r.maxDate).toBe("2030-12-31");
   });
   it("persists validation through makeField", () => {
     const f = makeField({
