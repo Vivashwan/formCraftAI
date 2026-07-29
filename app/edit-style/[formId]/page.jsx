@@ -154,6 +154,8 @@ function EditForm({ params }) {
   };
 
   const updateControllerFields = async (value, columnName) => {
+    // Guard against changes firing before the form record has loaded.
+    if (!record?.id) return;
     await updateFormColumn(record.id, columnName, value);
 
     toast("Updated !!");

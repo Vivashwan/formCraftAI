@@ -119,6 +119,60 @@ function FormUi({
     };
   }, [redirecting, redirectUrl]);
 
+  // Draft persistence (public form only): a sign-in round-trip reloads the form
+  // and would otherwise wipe what the respondent already typed. Save answers to
+  // sessionStorage on change and restore them on mount. File uploads are
+  // excluded (too big for sessionStorage; the user re-selects them).
+  const draftKey = formId ? `formcraft:draft:${formId}` : null;
+  const clearDraft = () => {
+    if (!draftKey) return;
+    try {
+      sessionStorage.removeItem(draftKey);
+    } catch (e) {
+      /* ignore */
+    }
+  };
+
+  useEffect(() => {
+    if (editable || !draftKey) return;
+    try {
+      const raw = sessionStorage.getItem(draftKey);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.formData) setFormData(d.formData);
+      if (d.phoneCodes) setPhoneCodes(d.phoneCodes);
+      if (d.phoneNumbers) setPhoneNumbers(d.phoneNumbers);
+      if (typeof d.currentPage === "number") setCurrentPage(d.currentPage);
+    } catch (e) {
+      /* ignore a corrupt draft */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (editable || !draftKey) return;
+    try {
+      // Drop file values (base64 data URLs) — too large for sessionStorage.
+      const savable = Object.fromEntries(
+        Object.entries(formData).filter(
+          ([, v]) => !(v && typeof v === "object" && v.dataUrl)
+        )
+      );
+      if (Object.keys(savable).length === 0) return; // don't clobber with empty
+      sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          formData: savable,
+          phoneCodes,
+          phoneNumbers,
+          currentPage,
+        })
+      );
+    } catch (e) {
+      /* quota/serialization issue — skip */
+    }
+  }, [formData, phoneCodes, phoneNumbers, currentPage, editable, draftKey]);
+
   // Returns a validation error string for a non-empty value, or null if valid.
   // Emptiness is handled separately by the required-field check. Covers email
   // format plus the owner-configured rules (length, numeric range, regex).
@@ -376,6 +430,7 @@ function FormUi({
         setPhoneCodes({});
         setPhoneNumbers({});
         setHoneypot("");
+        clearDraft(); // submitted — discard the saved draft
         // Always show the thank-you screen first. If a redirect URL is set, the
         // effect above navigates after a short, visible delay (so the thank-you
         // message isn't skipped and the transition isn't abrupt).
@@ -796,9 +851,23 @@ function FormUi({
         )}
       </Button>
     ) : (
-      <Button>
-        <SignInButton mode="modal">Sign In before submitting !!!</SignInButton>
-      </Button>
+      // Return to THIS form after sign-in (not the app's default /dashboard),
+      // so the respondent lands back on the form to finish submitting.
+      <SignInButton
+        mode="modal"
+        forceRedirectUrl={
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : undefined
+        }
+        signUpForceRedirectUrl={
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : undefined
+        }
+      >
+        <Button type="button">Sign in to submit</Button>
+      </SignInButton>
     );
 
   // Closed forms (public view only) don't accept responses.
@@ -869,6 +938,7 @@ function FormUi({
                 setFormData({});
                 setPhoneCodes({});
                 setPhoneNumbers({});
+                clearDraft();
                 setSubmitted(false);
               }}
             >

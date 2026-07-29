@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
@@ -17,7 +17,21 @@ import { toast } from "sonner";
 function ShareDialog({ url, title, trigger }) {
   const [copied, setCopied] = useState(null);
 
-  const embedCode = `<iframe src="${url}" width="100%" height="700" style="border:1px solid #e5e7eb;border-radius:12px" title="${
+  // Re-base the link on the actual origin the user is viewing (handles a dev
+  // server on a different port, or a prod domain that differs from the
+  // NEXT_PUBLIC_BASE_URL the link was built from).
+  const [absUrl, setAbsUrl] = useState(url);
+  useEffect(() => {
+    if (typeof window === "undefined" || !url) return;
+    try {
+      const u = new URL(url, window.location.origin);
+      setAbsUrl(window.location.origin + u.pathname + u.search);
+    } catch (e) {
+      setAbsUrl(url);
+    }
+  }, [url]);
+
+  const embedCode = `<iframe src="${absUrl}" width="100%" height="700" style="border:1px solid #e5e7eb;border-radius:12px" title="${
     title || "Form"
   }"></iframe>`;
 
@@ -51,11 +65,11 @@ function ShareDialog({ url, title, trigger }) {
           <div>
             <label className="text-xs block mb-1">Link</label>
             <div className="flex gap-2">
-              <Input value={url} readOnly onFocus={(e) => e.target.select()} />
+              <Input value={absUrl} readOnly onFocus={(e) => e.target.select()} />
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => copy(url, "link")}
+                onClick={() => copy(absUrl, "link")}
                 className="shrink-0"
               >
                 {copied === "link" ? (
@@ -70,7 +84,7 @@ function ShareDialog({ url, title, trigger }) {
           {/* QR code */}
           <div className="flex flex-col items-center gap-2">
             <div className="bg-white p-3 rounded-lg border">
-              <QRCodeSVG value={url || ""} size={160} />
+              <QRCodeSVG value={absUrl || ""} size={160} />
             </div>
             <span className="text-xs text-gray-500">Scan to open the form</span>
           </div>

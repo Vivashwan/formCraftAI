@@ -186,6 +186,10 @@ export async function updateFormJson(id, jsonform) {
 
 export async function updateFormColumn(id, column, value) {
   const email = await requireEmail();
+  // Ignore calls before the form's id is known (e.g. a Controller change fired
+  // while the editor is still loading) — Number(undefined) would be NaN and
+  // blow up the integer column comparison.
+  if (!Number.isFinite(Number(id))) return { ok: false };
   const allowed = ["theme", "background", "style", "enabledSignIn"];
   if (!allowed.includes(column)) throw new Error("Invalid column");
   const v =
