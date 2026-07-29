@@ -1,19 +1,20 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect } from "react";
+import React from "react";
 import ModeToggle from "./ModeToggle";
 
 function Header() {
   const { user, isSignedIn } = useUser();
   const path = usePathname();
-
-  useEffect(() => {
-    console.log(path);
-  }, []);
+  const { resolvedTheme } = useTheme();
+  const clerkAppearance =
+    resolvedTheme === "dark" ? { baseTheme: dark } : undefined;
 
   return (
     !path.includes("aiform") && (
@@ -35,7 +36,7 @@ function Header() {
                 <Link href={"/dashboard"}>
                   <Button variant="outline">Dashboard</Button>
                 </Link>
-                <UserButton />
+                <UserButton appearance={clerkAppearance} />
               </>
             ) : (
               <SignInButton>
