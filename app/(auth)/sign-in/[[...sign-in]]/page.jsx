@@ -1,6 +1,12 @@
+"use client";
 import { SignIn } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 
 export default function Page() {
+  const { resolvedTheme } = useTheme();
+  const clerkAppearance =
+    resolvedTheme === "dark" ? { baseTheme: dark } : undefined;
   return (
     <section className="bg-background">
       <div className="lg:grid lg:min-h-screen lg:grid-cols-12">
@@ -74,6 +80,7 @@ export default function Page() {
               path="/sign-in"
               signUpUrl="/sign-up"
               fallbackRedirectUrl="/dashboard"
+              appearance={clerkAppearance}
             />
           </div>
         </main>

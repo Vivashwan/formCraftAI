@@ -164,7 +164,7 @@ function EditForm({ params }) {
   // Form doesn't exist (e.g. an old integer URL) or isn't owned by this user.
   if (!loading && !record?.id) {
     return (
-      <div className="p-10 flex flex-col items-center justify-center text-center min-h-[60vh]">
+      <div className="p-4 md:p-10 flex flex-col items-center justify-center text-center min-h-[60vh]">
         <h2 className="text-2xl font-bold">Form not found</h2>
         <p className="text-muted-foreground mt-2">
           This form doesn’t exist or you don’t have access to it.
@@ -177,7 +177,7 @@ function EditForm({ params }) {
   }
 
   return (
-    <div className="p-10">
+    <div className="p-4 md:p-10">
       <div className="flex justify-between items-center">
         <h2
           className="flex gap-2 items-center my-5 cursor-pointer hover:font-bold"

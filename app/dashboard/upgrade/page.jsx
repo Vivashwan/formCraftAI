@@ -84,7 +84,7 @@ function Upgrade() {
   };
 
   return (
-    <div className='p-10'>
+    <div className='p-4 md:p-10'>
       {isPaid && (
         <div className="mx-auto max-w-3xl mb-6 flex items-center gap-2 rounded-xl border border-amber-400 bg-amber-50 text-amber-800 px-4 py-3">
           <Crown className="h-5 w-5" />

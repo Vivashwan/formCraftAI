@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-function SideNav() {
+function SideNav({ onNavigate }) {
   const menuList = [
     {
       id: 1,
@@ -58,6 +58,7 @@ function SideNav() {
           <Link
             href={menu.path}
             key={index}
+            onClick={() => onNavigate?.()}
             className={`flex items-center gap-3 p-5 mb-3 hover:bg-primary hover:text-primary-foreground rounded-lg cursor-pointer ${
               path == menu.path && "bg-primary text-primary-foreground"
             }`}

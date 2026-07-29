@@ -26,6 +26,8 @@ import FormHeaderEdit from "./FormHeaderEdit";
 import DateField from "./DateField";
 import { submitResponse } from "@/app/_actions/responses";
 import { SignInButton, useUser } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import {
   getEffectiveType,
@@ -102,6 +104,7 @@ function FormUi({
   const [redirectProgress, setRedirectProgress] = useState(false);
   let formReference = useRef();
   const { user, isSignedIn } = useUser();
+  const { resolvedTheme } = useTheme();
 
   // After a successful submit with a redirect URL, show the thank-you screen
   // briefly (with an animated progress bar), then navigate — instead of an
@@ -855,6 +858,7 @@ function FormUi({
       // so the respondent lands back on the form to finish submitting.
       <SignInButton
         mode="modal"
+        appearance={resolvedTheme === "dark" ? { baseTheme: dark } : undefined}
         forceRedirectUrl={
           typeof window !== "undefined"
             ? window.location.pathname + window.location.search
@@ -874,7 +878,7 @@ function FormUi({
   if (closed && !editable) {
     return (
       <div
-        className={`border p-8 md:w-[600px] rounded-lg text-center ${containerTextClass}`}
+        className={`border p-8 w-full max-w-[600px] rounded-lg text-center ${containerTextClass}`}
         data-theme={themeAttr}
         style={containerStyle}
       >
@@ -892,7 +896,7 @@ function FormUi({
   if (submitted) {
     return (
       <div
-        className={`border p-8 md:w-[600px] rounded-lg text-center animate-in fade-in zoom-in-95 duration-700 ${containerTextClass}`}
+        className={`border p-8 w-full max-w-[600px] rounded-lg text-center animate-in fade-in zoom-in-95 duration-700 ${containerTextClass}`}
         data-theme={themeAttr}
         style={containerStyle}
       >
@@ -954,7 +958,7 @@ function FormUi({
     <form
       ref={formReference}
       onSubmit={onFormSubmit}
-      className={`border p-3 md:w-[600px] rounded-lg ${containerTextClass}`}
+      className={`border p-3 w-full max-w-[600px] rounded-lg ${containerTextClass}`}
       data-theme={themeAttr}
       style={containerStyle}
     >

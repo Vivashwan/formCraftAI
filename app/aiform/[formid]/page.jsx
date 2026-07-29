@@ -38,7 +38,7 @@ function LiveAiForm({ params }) {
   // Form doesn't exist (e.g. an old integer URL / bad link).
   if (loaded && !record) {
     return (
-      <div className="p-10 flex flex-col items-center justify-center min-h-screen text-center">
+      <div className="p-4 md:p-10 flex flex-col items-center justify-center min-h-screen text-center">
         <h2 className="text-2xl font-bold">Form not found</h2>
         <p className="text-muted-foreground mt-2">
           This form doesn’t exist or the link is invalid.
@@ -56,7 +56,7 @@ function LiveAiForm({ params }) {
 
   return (
     <div
-      className="p-10 flex justify-center items-center min-h-screen"
+      className="p-4 md:p-10 flex justify-center items-center min-h-screen"
       style={{ backgroundImage: record?.background }}
     >
       {record && (
