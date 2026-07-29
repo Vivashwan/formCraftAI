@@ -1079,8 +1079,10 @@ function FormUi({
                     <GripVertical className="h-4 w-4 opacity-50" />
                   </span>
                 )}
-                {renderField(field, index)}
-                <div className="ml-2">
+                {/* min-w-0 lets the field shrink instead of overflowing the row
+                    (renderField is w-full) next to the move/edit controls. */}
+                <div className="flex-1 min-w-0">{renderField(field, index)}</div>
+                <div className="ml-2 shrink-0">
                   <FieldEdit
                     defaultValue={field}
                     onUpdate={(value) => onFieldUpdate(value, index)}

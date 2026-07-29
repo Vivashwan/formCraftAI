@@ -18,26 +18,21 @@ function Header() {
 
   return (
     !path.includes("aiform") && (
-      <div className="p-5 border-b shadow-sm">
-        <div className="flex items-center justify-between">
-          <Link href="/#">
+      <div className="p-3 md:p-5 border-b shadow-sm">
+        <div className="flex items-center justify-between gap-2">
+          <Link href="/#" className="shrink-0">
             <Image
               src={"/formCraftAi.png"}
               width={150}
               height={50}
               alt="logo"
-              className="cursor-pointer"
+              className="cursor-pointer w-28 md:w-[150px] h-auto"
             />
           </Link>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2 md:gap-5 shrink-0">
             <ModeToggle />
             {isSignedIn ? (
-              <>
-                <Link href={"/dashboard"}>
-                  <Button variant="outline">Dashboard</Button>
-                </Link>
-                <UserButton appearance={clerkAppearance} />
-              </>
+              <UserButton appearance={clerkAppearance} />
             ) : (
               <SignInButton>
                 <Button>Get Started</Button>

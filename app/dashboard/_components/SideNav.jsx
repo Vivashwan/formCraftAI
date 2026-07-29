@@ -52,7 +52,7 @@ function SideNav({ onNavigate }) {
   };
 
   return (
-    <div className="h-screen shadow-md border">
+    <div className="h-full min-h-screen md:min-h-0 md:h-screen shadow-md border">
       <div className="p-5">
         {menuList.map((menu, index) => (
           <Link

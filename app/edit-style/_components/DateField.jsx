@@ -158,7 +158,7 @@ function DateField({
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         {order.map((part, idx) => (
           <React.Fragment key={part}>
             <Input

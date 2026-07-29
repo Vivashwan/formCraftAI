@@ -11,8 +11,8 @@ function DashboardLayout({ children }) {
   return (
     <SignedIn>
       <div>
-        {/* Mobile top bar with hamburger (hidden on md+) */}
-        <div className="md:hidden sticky top-0 z-30 flex items-center gap-3 border-b bg-background p-4">
+        {/* Mobile menu button (hidden on md+) */}
+        <div className="md:hidden sticky top-0 z-30 flex items-center border-b bg-background p-3">
           <button
             type="button"
             aria-label="Open menu"
@@ -21,7 +21,6 @@ function DashboardLayout({ children }) {
           >
             <Menu className="h-6 w-6" />
           </button>
-          <span className="font-bold">formCraftAi</span>
         </div>
 
         {/* Backdrop (mobile only, when the drawer is open) */}
@@ -34,19 +33,24 @@ function DashboardLayout({ children }) {
 
         {/* Sidebar: slide-over drawer on mobile, fixed on md+ */}
         <div
-          className={`fixed top-0 left-0 z-50 h-screen w-64 bg-background transition-transform md:z-auto md:translate-x-0 ${
+          className={`fixed top-0 left-0 z-50 flex h-screen w-64 flex-col bg-background transition-transform md:top-auto md:z-auto md:translate-x-0 ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="absolute top-3 right-3 z-10 p-1 md:hidden"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <SideNav onNavigate={() => setOpen(false)} />
+          {/* Close row (mobile only) so the menu doesn't sit under the X */}
+          <div className="flex justify-end p-3 md:hidden shrink-0">
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+              className="p-1"
+            >
+              <X className="h-6 w-6 text-red-500" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <SideNav onNavigate={() => setOpen(false)} />
+          </div>
         </div>
 
         <div className="md:ml-64">{children}</div>

@@ -204,8 +204,8 @@ function EditForm({ params }) {
           />
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-5 border rounded-lg shadow-md">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+        <div className="p-4 md:p-5 border rounded-lg shadow-md">
           <div className="mb-5 space-y-2">
             <AddFieldDialog
               onAdd={onAddField}
@@ -243,7 +243,7 @@ function EditForm({ params }) {
           )}
         </div>
         <div
-          className="md:col-span-2 border rounded-lg p-5 flex items-center justify-center"
+          className="md:col-span-2 border rounded-lg p-3 md:p-5 flex items-center justify-center overflow-x-auto"
           style={{ backgroundImage: selectedBackground }}
         >
           {loading ? (

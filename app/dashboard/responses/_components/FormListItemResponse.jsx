@@ -575,69 +575,71 @@ function FormListItemResponse({ jsonForm, formRecord }) {
           if (!o) setSelected(new Set());
         }}
       >
-        <DialogContent className="max-w-5xl">
+        <DialogContent className="max-w-5xl w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="flex flex-wrap items-center justify-between gap-3 pr-6">
-              <span className="flex items-center gap-2">
-                {jsonForm?.formTitle || "Responses"}
-                <span className="flex items-center gap-1 text-xs font-normal text-green-600">
-                  <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  Live
-                </span>
+            <DialogTitle className="flex items-center gap-2 pr-8">
+              {jsonForm?.formTitle || "Responses"}
+              <span className="flex items-center gap-1 text-xs font-normal text-green-600">
+                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                Live
               </span>
-              <div className="flex items-center gap-2">
-                {!detail && (
-                  <div className="flex rounded-md border overflow-hidden">
-                    <button
-                      className={`px-3 py-1 text-xs flex items-center gap-1 ${
-                        tab === "responses" ? "bg-gray-900 text-white" : ""
-                      }`}
-                      onClick={() => setTab("responses")}
-                    >
-                      <List className="h-3 w-3" /> Responses
-                    </button>
-                    <button
-                      className={`px-3 py-1 text-xs flex items-center gap-1 ${
-                        tab === "summary" ? "bg-gray-900 text-white" : ""
-                      }`}
-                      onClick={() => setTab("summary")}
-                    >
-                      <BarChart3 className="h-3 w-3" /> Summary
-                    </button>
-                  </div>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex gap-2"
-                  onClick={exportToExcel}
-                  disabled={responses.length === 0}
-                >
-                  <Download className="h-4 w-4" /> Excel
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex gap-2"
-                  onClick={exportToCsv}
-                  disabled={responses.length === 0}
-                >
-                  <Download className="h-4 w-4" /> CSV
-                </Button>
-                {!detail && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex gap-2 text-red-600 hover:text-red-700"
-                    onClick={() => setConfirmDeleteAll(true)}
-                    disabled={responses.length === 0}
-                  >
-                    <Trash className="h-4 w-4" /> Delete all
-                  </Button>
-                )}
-              </div>
             </DialogTitle>
           </DialogHeader>
+
+          {/* Toolbar: tabs on the first row, export/delete actions below. */}
+          <div className="space-y-2">
+            {!detail && (
+              <div className="flex w-fit rounded-md border overflow-hidden">
+                <button
+                  className={`px-3 py-1 text-xs flex items-center gap-1 ${
+                    tab === "responses" ? "bg-gray-900 text-white" : ""
+                  }`}
+                  onClick={() => setTab("responses")}
+                >
+                  <List className="h-3 w-3" /> Responses
+                </button>
+                <button
+                  className={`px-3 py-1 text-xs flex items-center gap-1 ${
+                    tab === "summary" ? "bg-gray-900 text-white" : ""
+                  }`}
+                  onClick={() => setTab("summary")}
+                >
+                  <BarChart3 className="h-3 w-3" /> Summary
+                </button>
+              </div>
+            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex gap-2"
+                onClick={exportToExcel}
+                disabled={responses.length === 0}
+              >
+                <Download className="h-4 w-4" /> Excel
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex gap-2"
+                onClick={exportToCsv}
+                disabled={responses.length === 0}
+              >
+                <Download className="h-4 w-4" /> CSV
+              </Button>
+              {!detail && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex gap-2 text-red-600 hover:text-red-700"
+                  onClick={() => setConfirmDeleteAll(true)}
+                  disabled={responses.length === 0}
+                >
+                  <Trash className="h-4 w-4" /> Delete all
+                </Button>
+              )}
+            </div>
+          </div>
 
           {responses.length === 0 ? (
             <p className="text-sm text-gray-500 py-6 text-center">
