@@ -122,7 +122,10 @@ async function notifyOwner(form, data, responseId) {
     parsed = {};
   }
   const title = parsed.formTitle || "your form";
-  const fields = parsed?.formFields || parsed?.form || [];
+  // Page breaks are layout markers, not real fields — keep them out of the email.
+  const fields = (parsed?.formFields || parsed?.form || []).filter(
+    (f) => !isPageBreak(f)
+  );
   const base = process.env.NEXT_PUBLIC_BASE_URL || "";
   const rows = fields
     .map((f) => {
